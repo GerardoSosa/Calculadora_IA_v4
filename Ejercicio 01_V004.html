@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multiplicando con Animalitos</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(#fff0d0, #ffdde1);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+      padding: 30px;
+      margin: auto;
+      max-width: 400px;
+    }
+
+    .question {
+      font-size: 2rem;
+      margin: 20px 0;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      border: 2px solid #ccc;
+      width: 80px;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ff80ab;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff4f81;
+    }
+
+    .score {
+      font-size: 1.5rem;
+      margin-top: 15px;
+    }
+
+    .feedback {
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
+
+    .level-select {
+      margin: 20px 0;
+    }
+
+    select {
+      font-size: 1rem;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    .animal-img {
+      margin-top: 20px;
+      max-width: 150px;
+      border-radius: 20px;
+    }
+
+    option:disabled {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🐯 Multiplicando con Animalitos 🐸</h1>
+
+  <div class="level-select">
+    Nivel:
+    <select id="level" onchange="newQuestion()">
+      <option value="easy">Fácil (1–5)</option>
+      <option value="medium" disabled>Medio (1–10)</option>
+      <option value="hard" disabled>Difícil (5–12)</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <div id="question" class="question">¿Cuánto es 3 x 4?</div>
+    <input type="number" id="answer" placeholder="Tu respuesta"/>
+    <br/>
+    <button onclick="checkAnswer()">Revisar</button>
+    <div id="feedback" class="feedback"></div>
+    <div id="score" class="score">Puntos: 0</div>
+    <img id="animalImage" class="animal-img" src="https://cdn.pixabay.com/photo/2023/01/02/10/42/lion-7691542_1280.png" alt="Animal feliz" />
+  </div>
+
+  <audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+  <audio id="wrongSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+  <script>
+    let num1, num2, score = 0;
+    const scoreDisplay = document.getElementById("score");
+    const questionDisplay = document.getElementById("question");
+    const feedbackDisplay = document.getElementById("feedback");
+    const answerInput = document.getElementById("answer");
+    const levelSelect = document.getElementById("level");
+    const animalImage = document.getElementById("animalImage");
+
+    const levels = {
+      easy: { min: 1, max: 5, unlockAt: 0 },
+      medium: { min: 1, max: 10, unlockAt: 30 },
+      hard: { min: 5, max: 12, unlockAt: 75 }
+    };
+
+    const animals = {
+      easy: [
+        "https://cdn.pixabay.com/photo/2023/01/02/10/42/lion-7691542_1280.png",
+        "https://cdn.pixabay.com/photo/2020/06/06/18/49/rabbit-5269271_1280.png"
+      ],
+      medium: [
+        "https://cdn.pixabay.com/photo/2022/11/13/17/38/fox-7588923_1280.png",
+        "https://cdn.pixabay.com/photo/2023/02/14/10/35/monkey-7788530_1280.png"
+      ],
+      hard: [
+        "https://cdn.pixabay.com/photo/2020/07/15/16/46/tiger-5406029_1280.png",
+        "https://cdn.pixabay.com/photo/2017/01/31/15/52/panda-2026478_1280.png"
+      ]
+    };
+
+    const sounds = {
+      correct: document.getElementById("correctSound"),
+      wrong: document.getElementById("wrongSound")
+    };
+
+    function unlockLevels() {
+      const currentScore = score;
+      for (const level in levels) {
+        const option = levelSelect.querySelector(`option[value="${level}"]`);
+        if (currentScore >= levels[level].unlockAt) {
+          option.disabled = false;
+        }
+      }
+    }
+
+    function newQuestion() {
+      const level = levelSelect.value;
+      const { min, max } = levels[level];
+      num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+      questionDisplay.innerText = `¿Cuánto es ${num1} x ${num2}?`;
+      answerInput.value = "";
+      feedbackDisplay.innerText = "";
+
+      const animalOptions = animals[level];
+      const chosenAnimal = animalOptions[Math.floor(Math.random() * animalOptions.length)];
+      animalImage.src = chosenAnimal;
+    }
+
+    function checkAnswer() {
+      const userAnswer = parseInt(answerInput.value);
+      if (userAnswer === num1 * num2) {
+        score += 5;
+        feedbackDisplay.innerText = "¡Correcto! 🎉";
+        feedbackDisplay.style.color = "green";
+        sounds.correct.play();
+      } else {
+        feedbackDisplay.innerText = `Incorrecto. La respuesta es ${num1 * num2}.`;
+        feedbackDisplay.style.color = "red";
+        sounds.wrong.play();
+      }
+      scoreDisplay.innerText = `Puntos: ${score}`;
+      unlockLevels();
+      setTimeout(newQuestion, 1500);
+    }
+
+    newQuestion();
+  </script>
+</body>
+</html>
